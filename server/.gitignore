@@ -1,0 +1,55 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+projectenv/
+.projectenv/
+.venv/
+
+# Environment files
+.env
+.env.*
+
+# Logs and temp files
+*.log
+*.out
+*.bak
+*.tmp
+
+# Uploads (very important)
+uploads/
+media/
+staticfiles/
+
+# IDE / Editor files
+.vscode/
+.idea/
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dll
+*.dylib
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# Pytest / coverage / reports
+.coverage
+htmlcov/
+.tox/
+.nox/
+pytest_cache/
+
+# Database files
+*.db
+*.sqlite3
