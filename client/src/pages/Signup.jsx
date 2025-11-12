@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast'; // <-- Toaster added
 import { useAuth } from '../context/AuthContext';
 
 export default function Signup() {
@@ -9,6 +9,7 @@ export default function Signup() {
   const { register } = useAuth();
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // <-- toggle state
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,12 +24,16 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!userType) {
+      toast.error('Please select account type');
+      return;
+    }
+
     setLoading(true);
-    
     console.log('🚀 Submitting registration...', { ...formData, user_type: userType });
-    
+
     try {
-      // Prepare data according to backend requirements
+      // Build payload
       const registrationData = {
         email: formData.email,
         password: formData.password,
@@ -37,7 +42,6 @@ export default function Signup() {
         phone: formData.phone || null
       };
 
-      // Add user-type specific fields
       if (userType === 'student') {
         if (!formData.student_id) {
           toast.error('Student ID is required');
@@ -57,24 +61,23 @@ export default function Signup() {
       }
 
       console.log('📤 Sending registration data:', registrationData);
-
       const data = await register(registrationData);
-      
+
       console.log('✅ Registration successful:', data);
-      
       toast.success('Registration successful!');
-      
-      // Navigate based on user role
-      if (data.user.role === 'student') {
-        navigate('/student/dashboard');
-      } else if (data.user.role === 'teacher') {
-        navigate('/teacher/dashboard');
-      } else {
-        navigate('/');
-      }
+
+      const role = data?.user?.role;
+      if (role === 'student') navigate('/student/dashboard');
+      else if (role === 'teacher') navigate('/teacher/dashboard');
+      else navigate('/');
     } catch (error) {
       console.error('❌ Registration error:', error);
-      toast.error(error.message || 'Registration failed');
+      const message =
+        error?.message ||
+        error?.data?.message ||
+        error?.response?.data?.message ||
+        'Registration failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -82,6 +85,9 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex items-center justify-center px-4 py-8">
+      {/* Keep this if you don't have a global <Toaster /> in App.jsx */}
+      {/* <Toaster position="top-right" /> */}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-2xl">
         <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Create Your Account</h2>
@@ -98,7 +104,11 @@ export default function Signup() {
                     setStep(2);
                     console.log('Selected user type: student');
                   }}
-                  className="p-8 border-2 border-indigo-300 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                  className={`p-8 border-2 rounded-2xl transition-all group ${
+                    userType === 'student'
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50'
+                  }`}
                 >
                   <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-500 transition-colors">
                     <svg className="w-8 h-8 text-indigo-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,11 +127,15 @@ export default function Signup() {
                     setStep(2);
                     console.log('Selected user type: teacher');
                   }}
-                  className="p-8 border-2 border-purple-300 rounded-2xl hover:border-purple-500 hover:bg-purple-50 transition-all group"
+                  className={`p-8 border-2 rounded-2xl transition-all group ${
+                    userType === 'teacher'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
+                  }`}
                 >
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-500 transition-colors">
                     <svg className="w-8 h-8 text-purple-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-gray-800 text-center">Teacher</h3>
@@ -158,15 +172,36 @@ export default function Signup() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
-                    placeholder="Min 8 characters"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={8}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
+                      placeholder="Min 8 characters"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute inset-y-0 right-3 flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {showPassword ? (
+                        // eye-off
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 3l18 18M10.584 10.587A3 3 0 0112 9a3 3 0 013 3c0 .415-.084.81-.236 1.17m-1.64 1.64A2.997 2.997 0 0112 15a3 3 0 01-3-3c0-.415.084-.81.236-1.17M9.88 5.1A9.706 9.706 0 0112 5c5 0 9 4 9 7-.255.747-.733 1.55-1.39 2.32m-2.028 1.79A10.214 10.214 0 0112 19c-5 0-9-4-9-7a5.97 5.97 0 011.59-2.93" />
+                        </svg>
+                      ) : (
+                        // eye
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>

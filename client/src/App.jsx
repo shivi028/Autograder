@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
+import { Toaster } from 'react-hot-toast';
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgetPassword";
@@ -24,6 +24,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+         <Toaster position="top-right" />
         <Routes>
           {/* Default route */}
           <Route path={ROUTES.HOME} element={<Home />} />
