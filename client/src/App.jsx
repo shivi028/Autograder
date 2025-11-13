@@ -9,6 +9,7 @@ import Home from "./pages/Home"
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard"
 import {ROUTES} from "./constants/routes"
+import MainLayout from "./layouts/MainLayout";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, role, loading } = useAuth();
@@ -27,6 +28,7 @@ export default function App() {
          <Toaster position="top-right" />
         <Routes>
           {/* Default route */}
+           <Route element={<MainLayout />}>
           <Route path={ROUTES.HOME} element={<Home />} />
 
           {/* Auth routes */}
@@ -54,6 +56,7 @@ export default function App() {
               // </ProtectedRoute>
             }
           />
+          </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

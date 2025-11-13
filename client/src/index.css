@@ -2,89 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-/* @custom-variant dark (&:is(.dark *));
+/* Optional plugin */
+@import "tw-animate-css";
 
+/* --------------------------------------------
+   Root Theme Variables
+--------------------------------------------- */
 :root {
-  --background: 1 0 0;
-  --foreground: 0.25 0 0;
-  --card: 0.98 0 0;
-  --card-foreground: 0.25 0 0;
-  --popover: 1 0 0;
-  --popover-foreground: 0.25 0 0;
-  --primary: 0.6 0.15 264;
-  --primary-foreground: 1 0 0;
-  --secondary: 0.55 0.18 270;
-  --secondary-foreground: 1 0 0;
-  --muted: 0.96 0 0;
-  --muted-foreground: 0.45 0 0;
-  --accent: 0.55 0.18 270;
-  --accent-foreground: 1 0 0;
-  --destructive: 0.55 0.25 15;
-  --destructive-foreground: 1 0 0;
-  --border: 0.9 0 0;
-  --input: 0.98 0 0;
-  --ring: 0.6 0.15 264 / 0.5;
-  --chart-1: 0.6 0.15 264;
-  --chart-2: 0.55 0.18 270;
-  --chart-3: 0.7 0.12 150;
-  --chart-4: 0.75 0.15 60;
-  --chart-5: 0.65 0.2 330;
-  --radius: 0.5rem;
-  --sidebar: 1 0 0;
-  --sidebar-foreground: 0.25 0 0;
-  --sidebar-primary: 0.6 0.15 264;
-  --sidebar-primary-foreground: 1 0 0;
-  --sidebar-accent: 0.55 0.18 270;
-  --sidebar-accent-foreground: 1 0 0;
-  --sidebar-border: 0.9 0 0;
-  --sidebar-ring: 0.6 0.15 264 / 0.5;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(0.99 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.5 0.15 280);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.6 0.15 280);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.55 0.18 120);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.95 0 0);
+  --input: oklch(0.95 0 0);
+  --ring: oklch(0.5 0.15 280);
 }
 
+/* --------------------------------------------
+   Dark Mode
+--------------------------------------------- */
 .dark {
-  --background: 0.15 0 0;
-  --foreground: 0.95 0 0;
-  --card: 0.18 0 0;
-  --card-foreground: 0.95 0 0;
-  --popover: 0.15 0 0;
-  --popover-foreground: 0.95 0 0;
-  --primary: 0.7 0.15 264;
-  --primary-foreground: 0.15 0 0;
-  --secondary: 0.3 0 0;
-  --secondary-foreground: 0.95 0 0;
-  --muted: 0.25 0 0;
-  --muted-foreground: 0.65 0 0;
-  --accent: 0.3 0 0;
-  --accent-foreground: 0.95 0 0;
-  --destructive: 0.5 0.2 15;
-  --destructive-foreground: 0.95 0 0;
-  --border: 0.25 0 0;
-  --input: 0.25 0 0;
-  --ring: 0.7 0.15 264 / 0.5;
-  --chart-1: 0.7 0.15 264;
-  --chart-2: 0.65 0.18 270;
-  --chart-3: 0.75 0.12 150;
-  --chart-4: 0.8 0.15 60;
-  --chart-5: 0.7 0.2 330;
-  --sidebar: 0.12 0 0;
-  --sidebar-foreground: 0.95 0 0;
-  --sidebar-primary: 0.7 0.15 264;
-  --sidebar-primary-foreground: 0.95 0 0;
-  --sidebar-accent: 0.25 0 0;
-  --sidebar-accent-foreground: 0.95 0 0;
-  --sidebar-border: 0.25 0 0;
-  --sidebar-ring: 0.7 0.15 264 / 0.5;
+  --background: oklch(0.15 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.2 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.7 0.15 280);
+  --primary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.65 0.15 280);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.35 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.65 0.18 120);
+  --accent-foreground: oklch(0.15 0 0);
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.3 0 0);
+  --ring: oklch(0.65 0.15 280);
 }
 
-@layer base {
-  * {
-    @apply border-border ring-ring;
+/* --------------------------------------------
+   Base Styles
+--------------------------------------------- */
+body {
+  @apply bg-background text-foreground;
+}
+
+/* --------------------------------------------
+   Custom Utilities
+--------------------------------------------- */
+@layer components {
+  .glass {
+    @apply backdrop-blur-md bg-white/40 dark:bg-white/10 border border-white/20;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
   }
-} */
- @layer base {
-  body {
-    @apply antialiased;
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+
+  @keyframes floating {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
+  }
+
+  .success-green {
+    @apply text-emerald-500;
+  }
+
+  .highlight-amber {
+    @apply text-amber-500;
   }
 }

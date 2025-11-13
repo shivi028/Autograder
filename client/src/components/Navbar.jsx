@@ -1,186 +1,160 @@
-import React, { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Button } from "../components/ui/button"
-import { Menu, X, GraduationCap } from "lucide-react"
-import { supabase } from "../lib/supabase"
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, LayoutDashboard } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { ROUTES } from "../constants/routes";
 
-export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState(null)
-  const [role, setRole] = useState(null)
-  const navigate = useNavigate()
+const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isStudent, isTeacher, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  const navLinks = ["Features", "How It Works", "Pricing"];
 
   useEffect(() => {
-    // Check current session
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      const currentUser = session?.user || null
-      setUser(currentUser)
-      setRole(currentUser?.user_metadata?.role || null)
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleDashboardClick = () => {
+    if (isStudent) {
+      navigate(ROUTES.STUDENT_DASHBOARD);
+    } else if (isTeacher) {
+      navigate(ROUTES.TEACHER_DASHBOARD);
     }
-    getSession()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user || null
-      setUser(currentUser)
-      setRole(currentUser?.user_metadata?.role || null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setRole(null)
-    navigate("/")
-  }
+    setIsMobileMenuOpen(false);
+  };
 
   return (
-    <nav className="fixed top-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="p-2 bg-primary rounded-lg group-hover:bg-primary/90 transition-colors">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              AutoGrader
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors">
-              Home
-            </Link>
-            <Link to="/about" className="text-foreground hover:text-primary transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
-              Contact
-            </Link>
-
-            {/* Role-based Dashboard Link */}
-            {user && role === "student" && (
-              <Link
-                to="/dashboard/student"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                Dashboard
-              </Link>
-            )}
-            {user && role === "teacher" && (
-              <Link
-                to="/dashboard/teacher"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                Dashboard
-              </Link>
-            )}
-
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <Button variant="ghost" onClick={handleLogout}>
-                  Logout
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link to="/signup">Get Started</Link>
-                  </Button>
-                </>
-              )}
-            </div>
+    <nav
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-lg"
+          : "bg-gradient-to-b from-white via-white to-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">A</span>
           </div>
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-bold text-xl hidden sm:inline">
+            Autograder
+          </span>
+        </Link>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
-          </div>
+        {/* Desktop Nav Links */}
+        <div className="hidden md:flex gap-8">
+          {navLinks.map((link) => (
+            <a
+              key={link}
+              href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+              className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+            >
+              {link}
+            </a>
+          ))}
         </div>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-card rounded-lg mt-2 border border-border">
-              <Link
-                to="/"
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/about"
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                About
-              </Link>
-              <Link
-                to="/contact"
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                Contact
-              </Link>
-
-              {/* Role-based Dashboard Link (Mobile) */}
-              {user && role === "student" && (
-                <Link
-                  to="/dashboard/student"
-                  className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
+        {/* Auth Buttons - Desktop */}
+        <div className="hidden md:flex gap-3">
+          {!loading && (
+            <>
+              {!user ? (
+                // Not logged in - Show Login & Sign Up
+                <>
+                  <Link
+                    to={ROUTES.LOGIN}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to={ROUTES.SIGNUP}
+                    className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/50 transition-all shadow-md shadow-purple-500/30"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                // Logged in - Show Dashboard Button
+                <button
+                  onClick={handleDashboardClick}
+                  className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/50 transition-all shadow-md shadow-purple-500/30 flex items-center gap-2"
                 >
-                  Dashboard
-                </Link>
+                  <LayoutDashboard size={18} />
+                  <span>Dashboard</span>
+                </button>
               )}
-              {user && role === "teacher" && (
-                <Link
-                  to="/dashboard/teacher"
-                  className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              )}
+            </>
+          )}
+        </div>
 
-              <div className="flex flex-col space-y-2 px-3 pt-2">
-                {user ? (
-                  <Button variant="ghost" onClick={() => { handleLogout(); setIsOpen(false) }}>
-                    Logout
-                  </Button>
-                ) : (
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200">
+          <div className="px-4 py-4 space-y-4">
+            {navLinks.map((link) => (
+              <a
+                key={link}
+                href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+                className="block text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link}
+              </a>
+            ))}
+            
+            {/* Mobile Auth Buttons */}
+            {!loading && (
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                {!user ? (
+                  // Not logged in - Show Login & Sign Up
                   <>
-                    <Button variant="ghost" asChild>
-                      <Link to="/login" onClick={() => setIsOpen(false)}>
-                        Login
-                      </Link>
-                    </Button>
-                    <Button asChild>
-                      <Link to="/signup" onClick={() => setIsOpen(false)}>
-                        Get Started
-                      </Link>
-                    </Button>
+                    <Link
+                      to={ROUTES.LOGIN}
+                      className="flex-1 px-4 py-2 text-sm font-medium text-center text-gray-700 hover:text-indigo-600 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to={ROUTES.SIGNUP}
+                      className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium text-center"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
                   </>
+                ) : (
+                  // Logged in - Show Dashboard Button
+                  <button
+                    onClick={handleDashboardClick}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium flex items-center justify-center gap-2"
+                  >
+                    <LayoutDashboard size={18} />
+                    <span>Dashboard</span>
+                  </button>
                 )}
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
-  )
-}
+  );
+};
+
+export default Navbar;
