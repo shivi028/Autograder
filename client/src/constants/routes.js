@@ -6,13 +6,13 @@ export const ROUTES = {
   RESET_PASSWORD: '/reset-password',
   
   // Student routes
-  STUDENT_DASHBOARD: '/student/dashboard',
+  STUDENT_DASHBOARD: 'dashboard/student',
   STUDENT_EXAMS: '/student/exams',
   STUDENT_UPLOAD: '/student/upload',
   STUDENT_RESULTS: '/student/results',
   
   // Teacher routes
-  TEACHER_DASHBOARD: '/teacher/dashboard',
+  TEACHER_DASHBOARD: 'dashboard/teacher',
   TEACHER_SUBJECTS: '/teacher/subjects',
   TEACHER_EXAMS: '/teacher/exams',
   TEACHER_CREATE_EXAM: '/teacher/exams/create',

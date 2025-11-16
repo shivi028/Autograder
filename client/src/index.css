@@ -2,99 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional plugin */
-@import "tw-animate-css";
-
 /* --------------------------------------------
-   Root Theme Variables
+   Root Theme Variables (Brand Palette Added)
 --------------------------------------------- */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(0.99 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.5 0.15 280);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.6 0.15 280);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.55 0.18 120);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.95 0 0);
-  --input: oklch(0.95 0 0);
-  --ring: oklch(0.5 0.15 280);
-}
+  --background: #ffffff;
+  --foreground: #0b0b0b;
 
-/* --------------------------------------------
-   Dark Mode
---------------------------------------------- */
-.dark {
-  --background: oklch(0.15 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.2 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.15 280);
-  --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.65 0.15 280);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.35 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.65 0.18 120);
-  --accent-foreground: oklch(0.15 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.3 0 0);
-  --ring: oklch(0.65 0.15 280);
+  --card: #ffffff;
+  --card-foreground: #0b0b0b;
+
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0b;
+
+  /* BRAND COLORS */
+  --primary: #016B61;
+  --primary-foreground: #ffffff;
+
+  --secondary: #70B2B2;
+  --secondary-foreground: #ffffff;
+
+  --accent: #9ECFD4;
+  --accent-foreground: #0b0b0b;
+
+  --muted: #E5E9C5;
+  --muted-foreground: #4b4b4b;
+
+  --border: #dcdcdc;
+  --input: #dcdcdc;
+  --ring: #016B61;
 }
 
 /* --------------------------------------------
    Base Styles
 --------------------------------------------- */
-body {
-  @apply bg-background text-foreground;
-}
+
 
 /* --------------------------------------------
-   Custom Utilities
+   Custom Components
 --------------------------------------------- */
 @layer components {
-  .glass {
-    @apply backdrop-blur-md bg-white/40 dark:bg-white/10 border border-white/20;
-  }
 
-  .glow-effect {
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  .glass {
+    @apply backdrop-blur-md bg-white/40 border border-white/30;
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-[#016B61] via-[#70B2B2] to-[#9ECFD4] bg-clip-text text-transparent;
   }
 
-  .floating {
-    animation: floating 3s ease-in-out infinite;
+  .brand-btn {
+    @apply bg-gradient-to-br from-[#016B61] to-[#70B2B2] text-white font-semibold rounded-lg shadow-md 
+           hover:shadow-xl transition-all duration-300;
   }
 
-  @keyframes floating {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+  .brand-outline-btn {
+    @apply border border-[#016B61] text-[#016B61] font-semibold rounded-lg
+           hover:bg-[#016B61]/10 transition-all duration-300;
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
-  }
-
-  .success-green {
-    @apply text-emerald-500;
-  }
-
-  .highlight-amber {
-    @apply text-amber-500;
+    @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
   }
 }
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeInUp {
+  animation: fadeInUp 0.45s ease forwards;
+}
+
+/* Floating Subject Icon Animation */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-floatSlow {
+  animation: floatSlow 3s ease-in-out infinite;
+}
+
