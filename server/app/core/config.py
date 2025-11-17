@@ -14,9 +14,11 @@ class Settings(BaseSettings):
     UPLOAD_PATH: str = "uploads/"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    DEBUG: bool = True
+    DEBUG: bool = False
     class Config:
         env_file = str(Path(__file__).resolve().parents[2] / ".env")  # Make sure this points to your .env file
+        env_file_encoding = 'utf-8'
         extra = "ignore" 
+        case_sensitive = False
 
 settings = Settings()
