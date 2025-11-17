@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Footer } from "@/components/Footer";
-import InteractiveRoadmap from "./InteractiveRoadMap";
+import InteractiveRoadmap from "./InteractiveRoadmap";
 import AutograderHero from "./HeroSection";
 import FeaturesSection from "./FeaturesSection";
 import ComparisonSection from "./ComparisonSection";
