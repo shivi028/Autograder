@@ -4,25 +4,52 @@ import pytesseract
 from PIL import Image
 import cv2
 import numpy as np
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import fitz  # PyMuPDF
 import io
 import os
 import re
-import easyocr
-from paddleocr import PaddleOCR
 
 
 class OCRService:
     def __init__(self):
         # Confidence threshold for switching OCR engines
         self.confidence_threshold = 0.5
+        
+        # Don't initialize OCR engines at startup - lazy load them
+        self._easyocr_reader = None
+        self._paddle_ocr = None
 
-        # Initialize EasyOCR (for handwriting)
-        self.easyocr_reader = easyocr.Reader(['en'], gpu=False)
+    # -------------------------------------------------------------------------
+    # LAZY LOADING PROPERTIES
+    # -------------------------------------------------------------------------
+    @property
+    def easyocr_reader(self):
+        """Lazy load EasyOCR only when needed"""
+        if self._easyocr_reader is None:
+            try:
+                import easyocr
+                print("🔄 Initializing EasyOCR (first use only)...")
+                self._easyocr_reader = easyocr.Reader(['en'], gpu=False)
+                print("✅ EasyOCR initialized successfully")
+            except Exception as e:
+                print(f"⚠️ EasyOCR initialization failed: {e}")
+                self._easyocr_reader = None
+        return self._easyocr_reader
 
-        # Initialize PaddleOCR (robust fallback)
-        self.paddle_ocr = PaddleOCR(lang='en', use_angle_cls=True)
+    @property
+    def paddle_ocr(self):
+        """Lazy load PaddleOCR only when needed"""
+        if self._paddle_ocr is None:
+            try:
+                from paddleocr import PaddleOCR
+                print("🔄 Initializing PaddleOCR (first use only)...")
+                self._paddle_ocr = PaddleOCR(lang='en', use_angle_cls=True, show_log=False)
+                print("✅ PaddleOCR initialized successfully")
+            except Exception as e:
+                print(f"⚠️ PaddleOCR initialization failed: {e}")
+                self._paddle_ocr = None
+        return self._paddle_ocr
 
     # -------------------------------------------------------------------------
     # IMAGE OCR (PaddleOCR + Tesseract + EasyOCR Fallback)
@@ -40,24 +67,26 @@ class OCRService:
             # 🧠 Step 1: Try PaddleOCR first (best for handwriting)
             print("🧠 Trying PaddleOCR first (optimized for handwriting)...")
             try:
-                paddle_results = self.paddle_ocr.ocr(image_np, cls=True)
-                if paddle_results and isinstance(paddle_results, list):
-                    lines, confidences = [], []
-                    for block in paddle_results:
-                        for line in block:
-                            if len(line) >= 2:
-                                lines.append(line[1][0])
-                                confidences.append(line[1][1])
-                    if lines:
-                        text = " ".join(lines)
-                        avg_conf = round(sum(confidences) / len(confidences), 3)
-                        print(f"✅ PaddleOCR succeeded, confidence={avg_conf}")
-                        return {
-                            "text": text.strip(),
-                            "confidence": avg_conf,
-                            "status": "success",
-                            "method": "paddleocr"
-                        }
+                paddle_engine = self.paddle_ocr  # Lazy load
+                if paddle_engine:
+                    paddle_results = paddle_engine.ocr(image_np, cls=True)
+                    if paddle_results and isinstance(paddle_results, list):
+                        lines, confidences = [], []
+                        for block in paddle_results:
+                            for line in block:
+                                if len(line) >= 2:
+                                    lines.append(line[1][0])
+                                    confidences.append(line[1][1])
+                        if lines:
+                            text = " ".join(lines)
+                            avg_conf = round(sum(confidences) / len(confidences), 3)
+                            print(f"✅ PaddleOCR succeeded, confidence={avg_conf}")
+                            return {
+                                "text": text.strip(),
+                                "confidence": avg_conf,
+                                "status": "success",
+                                "method": "paddleocr"
+                            }
             except Exception as e:
                 print(f"⚠️ PaddleOCR failed initially: {e}")
 
@@ -95,17 +124,21 @@ class OCRService:
 
                 # 🧩 EasyOCR fallback
                 try:
-                    rgb_for_easy = (
-                        cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
-                        if processed.ndim == 3
-                        else cv2.cvtColor(processed, cv2.COLOR_GRAY2RGB)
-                    )
-                    easy_results = self.easyocr_reader.readtext(rgb_for_easy, detail=1, paragraph=True)
-                    if easy_results:
-                        texts = [r[1] for r in easy_results if len(r) >= 2]
-                        text_easy = " ".join(texts).strip()
-                        confs_easy = [r[2] for r in easy_results if isinstance(r[2], (float, int))]
-                        avg_conf_easy = sum(confs_easy) / len(confs_easy) if confs_easy else 0.0
+                    easyocr_engine = self.easyocr_reader  # Lazy load
+                    if easyocr_engine:
+                        rgb_for_easy = (
+                            cv2.cvtColor(processed, cv2.COLOR_BGR2RGB)
+                            if processed.ndim == 3
+                            else cv2.cvtColor(processed, cv2.COLOR_GRAY2RGB)
+                        )
+                        easy_results = easyocr_engine.readtext(rgb_for_easy, detail=1, paragraph=True)
+                        if easy_results:
+                            texts = [r[1] for r in easy_results if len(r) >= 2]
+                            text_easy = " ".join(texts).strip()
+                            confs_easy = [r[2] for r in easy_results if isinstance(r[2], (float, int))]
+                            avg_conf_easy = sum(confs_easy) / len(confs_easy) if confs_easy else 0.0
+                        else:
+                            text_easy, avg_conf_easy = "", 0.0
                     else:
                         text_easy, avg_conf_easy = "", 0.0
                 except Exception as e:
