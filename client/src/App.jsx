@@ -41,9 +41,7 @@ export default function App() {
           <Route
             path={ROUTES.STUDENT_DASHBOARD}
             element={
-              // <ProtectedRoute allowedRoles={["student"]}>
                 <StudentDashboard />
-              // </ProtectedRoute>
             }
           />
 
@@ -51,9 +49,7 @@ export default function App() {
           <Route
             path={ROUTES.TEACHER_DASHBOARD}
             element={
-              // <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
-              // </ProtectedRoute>
             }
           />
           </Route>
