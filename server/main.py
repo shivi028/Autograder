@@ -21,7 +21,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000", 
         "http://localhost:5173",
-        "https://autograder-4q7vp2tv1-shivi028s-projects.vercel.app/",
+        "https://autograder-4q7vp2tv1-shivi028s-projects.vercel.app",
         "https://*.vercel.app"
         ],
     allow_credentials=True,
@@ -52,10 +52,3 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=settings.DEBUG
-    )
